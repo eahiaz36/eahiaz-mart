@@ -1,15 +1,15 @@
 import { NextResponse, NextRequest } from "next/server";
-import { verifyJwt } from "@/lib/auth";
+import { verifyJwtEdge, getCookieName } from "@/lib/auth-edge";
 
 const LOCALES = ["bn", "en"] as const;
 
 function getLocale(req: NextRequest) {
   const cookieLocale = req.cookies.get("locale")?.value;
-  if (cookieLocale && LOCALES.includes(cookieLocale as any)) return cookieLocale;
+  if (cookieLocale === "bn" || cookieLocale === "en") return cookieLocale;
   return "bn";
 }
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Skip next internals
@@ -26,15 +26,22 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Admin protection: /admin is under /admin/[locale]/...
-  const isAdmin = pathname.includes("/admin/");
-  if (isAdmin) {
-    const token = req.cookies.get(process.env.COOKIE_NAME || "ea_session")?.value;
-    const payload = token ? verifyJwt(token) : null;
-    if (!payload || payload.role !== "admin") {
+  // Admin protection: /{locale}/admin/...
+  const isAdminRoute = /^\/(bn|en)\/admin(\/|$)/.test(pathname);
+  if (isAdminRoute) {
+    const token = req.cookies.get(getCookieName())?.value || null;
+
+    if (!token) {
+      const locale = pathname.split("/")[1] || "bn";
       const url = req.nextUrl.clone();
-      // Redirect to locale login
-      const locale = pathname.split("/")[2] || "bn";
+      url.pathname = `/${locale}/login`;
+      return NextResponse.redirect(url);
+    }
+
+    const payload = await verifyJwtEdge(token);
+    if (!payload || payload.role !== "admin") {
+      const locale = pathname.split("/")[1] || "bn";
+      const url = req.nextUrl.clone();
       url.pathname = `/${locale}/login`;
       return NextResponse.redirect(url);
     }
