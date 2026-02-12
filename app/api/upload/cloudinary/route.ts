@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { cloudinary } from "@/lib/cloudinary";
-import { getAuthToken, verifyJwt } from "@/lib/auth";
+import { verifyJwt } from "@/lib/auth";
+import { readAuthToken } from "@/lib/auth-cookies";
 
 export async function POST() {
-  const token = getAuthToken();
+  const token = await readAuthToken();
   const payload = token ? verifyJwt(token) : null;
   if (!payload || payload.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 

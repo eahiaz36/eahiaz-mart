@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { dbConnect } from "@/lib/db";
-import { getAuthToken, verifyJwt } from "@/lib/auth";
+import { verifyJwt } from "@/lib/auth";
+import { readAuthToken } from "@/lib/auth-cookies";
 import { checkoutSchema } from "@/schemas/order.zod";
 import { Product } from "@/models/Product";
 import { Order } from "@/models/Order";
 import { Settings } from "@/models/Settings";
 
 export async function POST(req: Request) {
-  const token = getAuthToken();
-  const payload = token ? verifyJwt(token) : null;
+  const token = await readAuthToken();
+const payload = token ? verifyJwt(token) : null;
   if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await dbConnect();
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
-  const token = getAuthToken();
+  const token = await readAuthToken();
   const payload = token ? verifyJwt(token) : null;
   if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

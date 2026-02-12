@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { dbConnect } from "@/lib/db";
 import { Category } from "@/models/Category";
 import { categoryTreeSchema } from "@/schemas/category.zod";
-import { getAuthToken, verifyJwt } from "@/lib/auth";
+import { verifyJwt } from "@/lib/auth";
+import { readAuthToken } from "@/lib/auth-cookies";
 
 type Node = {
   name: { en: string; bn: string };
@@ -32,7 +33,7 @@ async function upsertNode(node: Node, parentId: any, path: any[]) {
 }
 
 export async function POST(req: Request) {
-  const token = getAuthToken();
+  const token = await readAuthToken();
   const payload = token ? verifyJwt(token) : null;
   if (!payload || payload.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 

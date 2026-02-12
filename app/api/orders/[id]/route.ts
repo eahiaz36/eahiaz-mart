@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { dbConnect } from "@/lib/db";
-import { getAuthToken, verifyJwt } from "@/lib/auth";
+import { verifyJwt } from "@/lib/auth";
+import { readAuthToken } from "@/lib/auth-cookies";
 import { Order } from "@/models/Order";
 
 const allowedNext: Record<string, string[]> = {
@@ -17,7 +18,7 @@ export async function PATCH(
 ) {
   const { id } = await ctx.params;
 
-  const token = getAuthToken();
+  const token = await readAuthToken();
   const payload = token ? verifyJwt(token) : null;
   if (!payload || payload.role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -50,7 +51,7 @@ export async function GET(
 ) {
   const { id } = await ctx.params;
 
-  const token = getAuthToken();
+  const token = await readAuthToken();
   const payload = token ? verifyJwt(token) : null;
   if (!payload)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
