@@ -4,26 +4,55 @@ import { Product } from "@/models/Product";
 import { productUpsertSchema } from "@/schemas/product.zod";
 import { getAuthToken, verifyJwt } from "@/lib/auth";
 
-export async function PUT(req: Request, ctx: { params: { id: string } }) {
+export async function PUT(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> }
+) {
+  const { id } = await ctx.params;
+
   const token = getAuthToken();
   const payload = token ? verifyJwt(token) : null;
-  if (!payload || payload.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  if (!payload || payload.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   await dbConnect();
   const body = await req.json();
   const parsed = productUpsertSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten() }, { status: 400 });
 
-  const updated = await Product.findByIdAndUpdate(ctx.params.id, parsed.data, { new: true }).lean();
-  return NextResponse.json({ ok: true, product: updated });
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid input", details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  const updated = await Product.findByIdAndUpdate(id, parsed.data, {
+    new: true,
+  }).lean();
+
+  return NextResponse.json({
+    ok: true,
+    product: updated,
+  });
 }
 
-export async function DELETE(req: Request, ctx: { params: { id: string } }) {
+export async function DELETE(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> }
+) {
+  const { id } = await ctx.params;
+
   const token = getAuthToken();
   const payload = token ? verifyJwt(token) : null;
-  if (!payload || payload.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  if (!payload || payload.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   await dbConnect();
-  await Product.findByIdAndDelete(ctx.params.id);
+  await Product.findByIdAndDelete(id);
+
   return NextResponse.json({ ok: true });
 }
