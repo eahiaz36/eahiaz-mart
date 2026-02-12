@@ -1,14 +1,21 @@
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import { cookies } from "next/headers";
 
 const COOKIE_NAME = process.env.COOKIE_NAME || "ea_session";
-const JWT_SECRET = process.env.JWT_SECRET!;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+const JWT_SECRET = process.env.JWT_SECRET as string;
 
-export type JwtPayload = { sub: string; role: "customer" | "admin" };
+// 👇 Explicitly type expiresIn correctly
+const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || "7d") as SignOptions["expiresIn"];
+
+export type JwtPayload = {
+  sub: string;
+  role: "customer" | "admin";
+};
 
 export function signJwt(payload: JwtPayload) {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign(payload, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+  });
 }
 
 export function verifyJwt(token: string): JwtPayload | null {
@@ -20,16 +27,22 @@ export function verifyJwt(token: string): JwtPayload | null {
 }
 
 export function setAuthCookie(token: string) {
-  cookies().set(COOKIE_NAME, token, {
+  const response = cookies();
+  response.set(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: (process.env.COOKIE_SECURE || "true") === "true",
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
   });
 }
 
 export function clearAuthCookie() {
-  cookies().set(COOKIE_NAME, "", { httpOnly: true, path: "/", maxAge: 0 });
+  const response = cookies();
+  response.set(COOKIE_NAME, "", {
+    httpOnly: true,
+    path: "/",
+    maxAge: 0,
+  });
 }
 
 export function getAuthToken() {
