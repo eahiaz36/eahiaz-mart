@@ -1,0 +1,42 @@
+[
+  {
+    "name": { "en": "Electronics", "bn": "ইলেকট্রনিক্স" },
+    "slug": "electronics",
+    "children": [
+      { "name": { "en": "Mobiles", "bn": "মোবাইল" }, "slug": "mobiles", "children": [
+        { "name": { "en": "Smartphones", "bn": "স্মার্টফোন" }, "slug": "smartphones" },
+        { "name": { "en": "Feature Phones", "bn": "ফিচার ফোন" }, "slug": "feature-phones" },
+        { "name": { "en": "Mobile Accessories", "bn": "মোবাইল এক্সেসরিজ" }, "slug": "mobile-accessories", "children": [
+          { "name": { "en": "Chargers", "bn": "চার্জার" }, "slug": "chargers" },
+          { "name": { "en": "Power Banks", "bn": "পাওয়ার ব্যাংক" }, "slug": "power-banks" },
+          { "name": { "en": "Cables", "bn": "ক্যাবল" }, "slug": "cables" },
+          { "name": { "en": "Cases & Covers", "bn": "কেস ও কভার" }, "slug": "cases-covers" }
+        ] }
+      ]},
+      { "name": { "en": "Computers", "bn": "কম্পিউটার" }, "slug": "computers", "children": [
+        { "name": { "en": "Laptops", "bn": "ল্যাপটপ" }, "slug": "laptops" },
+        { "name": { "en": "Desktops", "bn": "ডেস্কটপ" }, "slug": "desktops" },
+        { "name": { "en": "Monitors", "bn": "মনিটর" }, "slug": "monitors" },
+        { "name": { "en": "Storage", "bn": "স্টোরেজ" }, "slug": "storage", "children": [
+          { "name": { "en": "SSD", "bn": "এসএসডি" }, "slug": "ssd" },
+          { "name": { "en": "HDD", "bn": "এইচডিডি" }, "slug": "hdd" },
+          { "name": { "en": "Pendrive", "bn": "পেনড্রাইভ" }, "slug": "pendrive" }
+        ] }
+      ]}
+    ]
+  },
+  {
+    "name": { "en": "Home & Lifestyle", "bn": "হোম ও লাইফস্টাইল" },
+    "slug": "home-lifestyle",
+    "children": [
+      { "name": { "en": "Kitchen", "bn": "কিচেন" }, "slug": "kitchen", "children": [
+        { "name": { "en": "Cookware", "bn": "কুকওয়্যার" }, "slug": "cookware" },
+        { "name": { "en": "Dinner Sets", "bn": "ডিনার সেট" }, "slug": "dinner-sets" }
+      ]},
+      { "name": { "en": "Furniture", "bn": "ফার্নিচার" }, "slug": "furniture", "children": [
+        { "name": { "en": "Sofas", "bn": "সোফা" }, "slug": "sofas" },
+        { "name": { "en": "Beds", "bn": "বেড" }, "slug": "beds" }
+      ]}
+    ]
+  }
+]
