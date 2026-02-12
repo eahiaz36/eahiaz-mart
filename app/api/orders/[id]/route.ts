@@ -1,17 +1,10 @@
 import { NextResponse } from "next/server";
 import { dbConnect } from "@/lib/db";
+import { Product } from "@/models/Product";
+import { productUpsertSchema } from "@/schemas/product.zod";
 import { getAuthToken, verifyJwt } from "@/lib/auth";
-import { Order } from "@/models/Order";
 
-const allowedNext: Record<string, string[]> = {
-  Pending: ["Confirmed", "Cancelled"],
-  Confirmed: ["Shipped", "Cancelled"],
-  Shipped: ["Delivered", "Cancelled"],
-  Delivered: [],
-  Cancelled: [],
-};
-
-export async function PATCH(
+export async function PUT(
   req: Request,
   ctx: { params: Promise<{ id: string }> }
 ) {
@@ -19,32 +12,33 @@ export async function PATCH(
 
   const token = getAuthToken();
   const payload = token ? verifyJwt(token) : null;
+
   if (!payload || payload.role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   await dbConnect();
-  const { status, note } = await req.json();
+  const body = await req.json();
+  const parsed = productUpsertSchema.safeParse(body);
 
-  const order: any = await Order.findById(id);
-  if (!order)
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-
-  if (!allowedNext[order.status]?.includes(status)) {
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Invalid status transition" },
+      { error: "Invalid input", details: parsed.error.flatten() },
       { status: 400 }
     );
   }
 
-  order.status = status;
-  order.timeline.push({ status, note: note || "" });
-  await order.save();
+  const updated = await Product.findByIdAndUpdate(id, parsed.data, {
+    new: true,
+  }).lean();
 
-  return NextResponse.json({ ok: true, status: order.status });
+  return NextResponse.json({
+    ok: true,
+    product: updated,
+  });
 }
 
-export async function GET(
+export async function DELETE(
   req: Request,
   ctx: { params: Promise<{ id: string }> }
 ) {
@@ -52,22 +46,13 @@ export async function GET(
 
   const token = getAuthToken();
   const payload = token ? verifyJwt(token) : null;
-  if (!payload)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  await dbConnect();
-  const order: any = await Order.findById(id).lean();
-  if (!order)
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-
-  if (
-    payload.role !== "admin" &&
-    String(order.userId) !== payload.sub
-  ) {
+  if (!payload || payload.role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  return NextResponse.json({
-    order: { ...order, id: String(order._id) },
-  });
+  await dbConnect();
+  await Product.findByIdAndDelete(id);
+
+  return NextResponse.json({ ok: true });
 }
